@@ -80,7 +80,7 @@ class Venue(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    genres = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String), nullable=False)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
@@ -124,7 +124,7 @@ class Artist(db.Model):
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
     website = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, default=False)
@@ -430,12 +430,11 @@ def create_venue_form():
 def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
-    body = {}
     error = False
     try:
         print(request.form)
-        # genres = request.form["genres"]
-        # genres_str = ", ".join(genres)
+        # genres = request.form.getlist('genres')
+        # genres_str = ",".join(genres)
         seeking_value = False
         # seeking_talent = request.form['seeking_talent']
         seeking_talent = request.form.get("seeking_talent") == "y"
@@ -446,7 +445,7 @@ def create_venue_submission():
 
         new_venue = Venue(
             name=request.form["name"],
-            genres=genres_str,
+            genres=form["genres"],
             city=request.form["city"],
             state=request.form["state"],
             address=request.form["address"],
@@ -531,7 +530,7 @@ def delete_venue(venue_id):
     if error:
         abort(500)
     else:
-        return None
+        return render_template("pages/home.html")
 
 
 #  Artists
@@ -804,13 +803,13 @@ def edit_venue_submission(venue_id):
         venue.genres = form.get("generes", venue.genres)
         venue.city = form.get("city", venue.city)
         venue.state = form.get("state", venue.state)
-        venue.address = request.form("address", venue.address)
-        venue.phone = request.form("phone", venue.phone)
-        venue.website = request.form("website_link", venue.website)
-        venue.image_link = request.form("image_link", venue.image_link)
-        venue.facebook_link = request.form("facebook_link", venue.facebook_link)
-        venue.seeking_talent = ("seeking_value", venue.seeking_talent)
-        venue.seeking_description = request.form(
+        venue.address = form.get("address", venue.address)
+        venue.phone = form.get("phone", venue.phone)
+        venue.website = form.get("website_link", venue.website)
+        venue.image_link = form.get("image_link", venue.image_link)
+        venue.facebook_link = form.get("facebook_link", venue.facebook_link)
+        venue.seeking_talent = form.get("seeking_value")
+        venue.seeking_description = form.get(
             "seeking_description", venue.seeking_description
         )
 
