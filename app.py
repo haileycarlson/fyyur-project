@@ -142,6 +142,14 @@ def venues():
     data = []
 
     for venue in venues:
+        upcoming_shows_count = (Show.query.join(Venue)
+          .filter(
+            Show.venue_id == venue.id,
+            Show.start_time > datetime.utcnow()
+          )
+          .count()
+          )
+
         city_state_entry = next(
             (
                 entry
@@ -156,7 +164,7 @@ def venues():
                 {
                     "id": venue.id,
                     "name": venue.name,
-                    "num_upcoming_shows": venue.upcoming_shows_count(),
+                    "num_upcoming_shows": upcoming_shows_count,
                 }
             )
         else:
@@ -168,7 +176,7 @@ def venues():
                         {
                             "id": venue.id,
                             "name": venue.name,
-                            "num_upcoming_shows": venue.upcoming_shows_count(),
+                            "num_upcoming_shows": upcoming_shows_count,
                         }
                     ],
                 }
