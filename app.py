@@ -52,12 +52,12 @@ app.app_context().push()
 # ----------------------------------------------------------------------------#
 
 
-shows = db.Table(
-    "shows",
-    db.Column("show_id", db.Integer, db.ForeignKey("show.id"), primary_key=True),
-    db.Column("artist_id", db.Integer, db.ForeignKey("artist.id"), primary_key=True),
-    db.Column("venue_id", db.Integer, db.ForeignKey("venue.id"), primary_key=True),
-)
+# shows = db.Table(
+#     "shows",
+#     db.Column("show_id", db.Integer, db.ForeignKey("show.id"), primary_key=True),
+#     db.Column("artist_id", db.Integer, db.ForeignKey("artist.id"), primary_key=True),
+#     db.Column("venue_id", db.Integer, db.ForeignKey("venue.id"), primary_key=True),
+# )
 
 
 class Show(db.Model):
@@ -90,27 +90,26 @@ class Venue(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(500))
-    artist_upcoming_shows = db.relationship(
-        "Artist", secondary=shows, backref=db.backref("upcoming_venues", lazy=True)
-    )
-    artist_past_shows = db.relationship(
-        "Artist", secondary=shows, backref=db.backref("past_venues", lazy=True)
-    )
-    # upcoming_shows_count = db.func.count(Show.id)
-    # past_shows_count = db.func.count(Show.id)
+    shows = db.relationship('Show', backref='venue', lazy=True)
+    # artist_upcoming_shows = db.relationship(
+    #     "Artist", secondary=shows, backref=db.backref("upcoming_venues", lazy=True)
+    # )
+    # artist_past_shows = db.relationship(
+    #     "Artist", secondary=shows, backref=db.backref("past_venues", lazy=True)
+    # )
 
-    def upcoming_shows_count(self):
-        now = datetime.utcnow()
-        return len(
-            [show for show in self.artist_upcoming_shows if show.start_time > now]
-        )
+    # def upcoming_shows_count(self):
+    #     now = datetime.utcnow()
+    #     return len(
+    #         [show for show in self.artist_upcoming_shows if show.start_time > now]
+    #     )
 
-    def past_shows_count(self):
-        now = datetime.utcnow()
-        return len([show for show in self.artist_past_shows if show.start_time <= now])
+    # def past_shows_count(self):
+    #     now = datetime.utcnow()
+    #     return len([show for show in self.artist_past_shows if show.start_time <= now])
 
-    # def __repr__(self):
-    #     return f'<Venue ID: {self.id}, name: {self.name}, genres: {self.genres}, city: {self.city}, state: {self.state}, address: {self.address}, phone: {self.phone}, website: {self.website}, image_link: {self.image_link}, facebook_link: {self.facebook_link}, seeking_talent: {self.seeking_talent}, seeking_description: {self.seeking_description}, past_shows_count: {self.past_shows_count}, upcoming_shows_count: {self.upcoming_shows_count}>'
+    def __repr__(self):
+        return f'<Venue ID: {self.id}, name: {self.name}, genres: {self.genres}, city: {self.city}, state: {self.state}, address: {self.address}, phone: {self.phone}, website: {self.website}, image_link: {self.image_link}, facebook_link: {self.facebook_link}, seeking_talent: {self.seeking_talent}, seeking_description: {self.seeking_description}>'
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -430,31 +429,35 @@ def create_venue_form():
 def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
-    error = False
-    try:
-        print(request.form)
-        # genres = request.form.getlist('genres')
-        # genres_str = ",".join(genres)
-        seeking_value = False
-        # seeking_talent = request.form['seeking_talent']
-        seeking_talent = request.form.get("seeking_talent") == "y"
-        if seeking_talent == "y":
-            seeking_value = True
-        else:
-            seeking_value = False
+    form = VenueForm(request.form, meta={'csrf': False})
+    # error = False
+    # try:
+    #     print(request.form)
+    #     # genres = request.form.getlist('genres')
+    #     # genres_str = ",".join(genres)
+    #     seeking_value = False
+    #     # seeking_talent = request.form['seeking_talent']
+    #     seeking_talent = request.form.get("seeking_talent") == "y"
+    #     if seeking_talent == "y":
+    #         seeking_value = True
+    #     else:
+    #         seeking_value = False
 
+    if form.validate():
+
+      try:
         new_venue = Venue(
-            name=request.form["name"],
-            genres=form["genres"],
-            city=request.form["city"],
-            state=request.form["state"],
-            address=request.form["address"],
-            phone=request.form["phone"],
-            website=request.form["website_link"],
-            image_link=request.form["image_link"],
-            facebook_link=request.form["facebook_link"],
-            seeking_talent=seeking_value,
-            seeking_description=request.form["seeking_description"],
+            name=form.name.data,
+            genres=form.genres.data,
+            city=form.city.data,
+            state=form.state.data,
+            address=form.address.data,
+            phone=form.phone.data,
+            website=form.website_link.data,
+            image_link=form.image_link.data,
+            facebook_link=form.facebook_link.data,
+            seeking_talent=form.seeking_talent.data,
+            seeking_description=form.seeking_description.data,
         )
         db.session.add(new_venue)
         db.session.commit()
@@ -471,25 +474,23 @@ def create_venue_submission():
         # body["facebook_link"] = new_venue.facebook_link
         # body["seeking_talent"] = new_venue.seeking_talent
         # body["seeking_description"] = new_venue.seeking_description
-    except Exception as e:
+      except ValueError as e:
         db.session.rollback()
-        error = e
-        print(sys.exc_info())
         print(e)
 
-    finally:
+      finally:
         db.session.close()
 
-    if error:
+      flash("Venue " + request.form["name"] + " was successfully listed!")
+      return redirect(url_for("venues"))
+        # return jsonify(body)
+        
+
+    else:
         flash(
             "An error occurred. Venue " + request.form["name"] + " could not be listed."
         )
         return abort(500)
-
-    else:
-        flash("Venue " + request.form["name"] + " was successfully listed!")
-        return redirect(url_for("venues"))
-        # return jsonify(body)
 
 
 #  name = request.get_json()["name"]
