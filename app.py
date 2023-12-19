@@ -28,6 +28,8 @@ from sqlalchemy import func, or_
 # Added to try to fix database connection
 from flask_migrate import Migrate
 
+from models import db
+
 # ----------------------------------------------------------------------------#
 # App Config.
 # ----------------------------------------------------------------------------#
@@ -38,7 +40,7 @@ app.config[
 ] = "postgresql://haileycarlson:cupcake@localhost:5432/fyyur"
 moment = Moment(app)
 app.config.from_object("config")
-db = SQLAlchemy(app)
+db = init_app(app)
 # Added to try to fix database connection
 migrate = Migrate(app, db)
 
@@ -58,96 +60,6 @@ app.app_context().push()
 #     db.Column("artist_id", db.Integer, db.ForeignKey("artist.id"), primary_key=True),
 #     db.Column("venue_id", db.Integer, db.ForeignKey("venue.id"), primary_key=True),
 # )
-
-
-class Show(db.Model):
-    __tablename__ = "show"
-
-    id = db.Column(db.Integer, primary_key=True)
-    start_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    artist_id = db.Column(db.Integer, db.ForeignKey("artist.id"))
-    venue_id = db.Column(db.Integer, db.ForeignKey("venue.id"))
-    artists = db.relationship(
-        "Artist", secondary=shows, backref=db.backref("shows", lazy=True)
-    )
-    venues = db.relationship(
-        "Venue", secondary=shows, backref=db.backref("shows", lazy=True)
-    )
-
-
-class Venue(db.Model):
-    __tablename__ = "venue"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    genres = db.Column(db.ARRAY(db.String), nullable=False)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean, default=False)
-    seeking_description = db.Column(db.String(500))
-    shows = db.relationship('Show', backref='venue', lazy=True)
-    # artist_upcoming_shows = db.relationship(
-    #     "Artist", secondary=shows, backref=db.backref("upcoming_venues", lazy=True)
-    # )
-    # artist_past_shows = db.relationship(
-    #     "Artist", secondary=shows, backref=db.backref("past_venues", lazy=True)
-    # )
-
-    # def upcoming_shows_count(self):
-    #     now = datetime.utcnow()
-    #     return len(
-    #         [show for show in self.artist_upcoming_shows if show.start_time > now]
-    #     )
-
-    # def past_shows_count(self):
-    #     now = datetime.utcnow()
-    #     return len([show for show in self.artist_past_shows if show.start_time <= now])
-
-    def __repr__(self):
-        return f'<Venue ID: {self.id}, name: {self.name}, genres: {self.genres}, city: {self.city}, state: {self.state}, address: {self.address}, phone: {self.phone}, website: {self.website}, image_link: {self.image_link}, facebook_link: {self.facebook_link}, seeking_talent: {self.seeking_talent}, seeking_description: {self.seeking_description}>'
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-
-class Artist(db.Model):
-    __tablename__ = "artist"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    genres = db.Column(db.ARRAY(db.String), nullable=False)
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean, default=False)
-    seeking_description = db.Column(db.String(200))
-    shows = db.relationship('show', backref='artist', lazy=True)
-    # venue_past_shows = db.relationship(
-    #     "Venue", secondary=shows, backref=db.backref("past_artists", lazy=True)
-    # )
-    # venue_upcoming_shows = db.relationship(
-    #     "Venue", secondary=shows, backref=db.backref("upcoming_artists", lazy=True)
-    # )
-
-    # def upcoming_shows_count(self):
-    #     now = datetime.utcnow()
-    #     return len(
-    #         [show for show in self.venue_upcoming_shows if show.start_time > now]
-    #     )
-
-    # def past_shows_count(self):
-    #     now = datetime.utcnow()
-    #     return len([show for show in self.venue_past_shows if show.start_time <= now])
-
-    def __repr__(self):
-        return f'<Artist ID: {self.id}, name: {self.name}, city: {self.city}, state: {self.state}, phone: {self.phone}, website: {self.website}, genres: {self.genres}, image_link: {self.image_link}, facebook_link: {self.facebook_link}, seeking_venue: {self.seeking_venue}, seeking_description: {self.seeking_description}>'
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
