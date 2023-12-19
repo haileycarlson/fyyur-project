@@ -28,7 +28,7 @@ from sqlalchemy import func, or_
 # Added to try to fix database connection
 from flask_migrate import Migrate
 
-from models import db
+from models import db, Show, Venue, Artist
 
 # ----------------------------------------------------------------------------#
 # App Config.
@@ -40,7 +40,7 @@ app.config[
 ] = "postgresql://haileycarlson:cupcake@localhost:5432/fyyur"
 moment = Moment(app)
 app.config.from_object("config")
-db = init_app(app)
+db.init_app(app)
 # Added to try to fix database connection
 migrate = Migrate(app, db)
 
