@@ -381,18 +381,6 @@ def create_venue_submission():
         db.session.add(new_venue)
         db.session.commit()
 
-        # body["id"] = new_venue.id
-        # body["name"] = new_venue.name
-        # body["genres"] = new_venue.genres
-        # body["city"] = new_venue.city
-        # body["state"] = new_venue.state
-        # body["address"] = new_venue.address
-        # body["phone"] = new_venue.phone
-        # body["website"] = new_venue.website
-        # body["image_link"] = new_venue.image_link
-        # body["facebook_link"] = new_venue.facebook_link
-        # body["seeking_talent"] = new_venue.seeking_talent
-        # body["seeking_description"] = new_venue.seeking_description
       except ValueError as e:
         db.session.rollback()
         print(e)
@@ -470,22 +458,25 @@ def delete_venue(venue_id):
 @app.route("/artists")
 def artists():
     # TODO: replace with real data returned from querying the database
-    data = [
-        {
-            "id": 4,
-            "name": "Guns N Petals",
-        },
-        {
-            "id": 5,
-            "name": "Matt Quevedo",
-        },
-        {
-            "id": 6,
-            "name": "The Wild Sax Band",
-        },
-    ]
-    return render_template("pages/artists.html", artists=data)
+    # data = [
+    #     {
+    #         "id": 4,
+    #         "name": "Guns N Petals",
+    #     },
+    #     {
+    #         "id": 5,
+    #         "name": "Matt Quevedo",
+    #     },
+    #     {
+    #         "id": 6,
+    #         "name": "The Wild Sax Band",
+    #     },
+    # ]
+    # return render_template("pages/artists.html", artists=data)
 
+    artist = Artist.query.all()
+
+    return render_template("pages/artists.html", artists=artist)
 
 @app.route("/artists/search", methods=["POST"])
 def search_artists():
@@ -775,57 +766,43 @@ def create_artist_submission():
     # called upon submitting the new artist listing form
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
-    error = False
-    try:
-        seeking_value = False
-        seeking_venue = request.form["seeking_venue"]
-        if seeking_venue == "y":
-            seeking_value = True
+    form = ArtistForm(request.form, meta={'csrf': False})
+    
+    if form.validate():
 
+      try:
         new_artist = Artist(
-            name=request.form["name"],
-            genres=request.form["genres"],
-            city=request.form["city"],
-            state=request.form["state"],
-            address=request.form["address"],
-            phone=request.form["phone"],
-            website=request.form["website_link"],
-            image_link=request.form["image_link"],
-            facebook_link=request.form["facebook_link"],
-            seeking_venue=seeking_value,
-            seeking_description=request.form["seeking_description"],
+            name=form.name.data,
+            genres=form.genres.data,
+            city=form.city.data,
+            state=form.state.data,
+            phone=form.phone.data,
+            website=form.website_link.data,
+            image_link=form.image_link.data,
+            facebook_link=form.facebook_link.data,
+            seeking_venue=form.seeking_venue.data,
+            seeking_description=form.seeking_description.data,
         )
         db.session.add(new_artist)
         db.session.commit()
 
-        # body["id"] = new_artist.id
-        # body["name"] = new_artist.name
-        # body["genres"] = new_artist.genres
-        # body["city"] = new_artist.city
-        # body["state"] = new_artist.state
-        # body["address"] = new_artist.address
-        # body["phone"] = new_artist.phone
-        # body["website"] = new_artist.website
-        # body["image_link"] = new_artist.image_link
-        # body["facebook_link"] = new_artist.facebook_link
-        # body["seeking_venue"] = new_artist.seeking_venue
-        # body["seeking_description"] = new_artist.seeking_description
-    except Exception as e:
+      except ValueError as e:
         db.session.rollback()
-        error = e
-        print(sys.exc_info())
         print(e)
 
-    finally:
+      finally:
         db.session.close()
 
-    if error:
-        # flash('An error occurred. Artist ' + request.form["name"] + ' could not be listed.')
-        return abort(500)
+      flash("Artist " + request.form["name"] + " was successfully listed!")
+      return redirect(url_for("artists"))
+        # return jsonify(body)
+        
 
     else:
-        flash("Artist " + request.form["name"] + " was successfully listed!")
-        return render_template("pages/artist.html", shows=data)
+        flash(
+            "An error occurred. Artist " + request.form["name"] + " could not be listed."
+        )
+        return abort(500)
 
     # on successful db insert, flash success
     # flash("Artist " + request.form["name"] + " was successfully listed!")
@@ -911,15 +888,18 @@ def create_show_submission():
     # e.g., flash('An error occurred. Show could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
 
+    form = VenueForm(request.form, meta={'csrf': False})
+
+
     try:
         # Grabs the info from form to be added to the db
 
         new_show = Show(
-            start_time=request.form["start_time"],
-            artist_id=request.form["artist_id"],
-            venue_id=request.form["venue_id"],
-            artists=request.form["artists"],
-            venues=request.form["venues"],
+            start_time=form.start_time.data,
+            artist_id=form.artist_id.data,
+            venue_id=form.venue_id.data,
+            artists=form.artists.data,
+            venues=form.venues.data,
         )
 
         # Info is then added to the db and commited
