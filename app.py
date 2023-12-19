@@ -128,27 +128,26 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(200))
-    venue_past_shows = db.relationship(
-        "Venue", secondary=shows, backref=db.backref("past_artists", lazy=True)
-    )
-    venue_upcoming_shows = db.relationship(
-        "Venue", secondary=shows, backref=db.backref("upcoming_artists", lazy=True)
-    )
-    # # past_shows_count = db.func.count(Show.id)
-    # # upcoming_shows_count = db.func.count(Show.id)
+    shows = db.relationship('show', backref='artist', lazy=True)
+    # venue_past_shows = db.relationship(
+    #     "Venue", secondary=shows, backref=db.backref("past_artists", lazy=True)
+    # )
+    # venue_upcoming_shows = db.relationship(
+    #     "Venue", secondary=shows, backref=db.backref("upcoming_artists", lazy=True)
+    # )
 
-    def upcoming_shows_count(self):
-        now = datetime.utcnow()
-        return len(
-            [show for show in self.venue_upcoming_shows if show.start_time > now]
-        )
+    # def upcoming_shows_count(self):
+    #     now = datetime.utcnow()
+    #     return len(
+    #         [show for show in self.venue_upcoming_shows if show.start_time > now]
+    #     )
 
-    def past_shows_count(self):
-        now = datetime.utcnow()
-        return len([show for show in self.venue_past_shows if show.start_time <= now])
+    # def past_shows_count(self):
+    #     now = datetime.utcnow()
+    #     return len([show for show in self.venue_past_shows if show.start_time <= now])
 
-    # def __repr__(self):
-    #     return f'<Artist ID: {self.id}, name: {self.name}, city: {self.city}, state: {self.state}, phone: {self.phone}, website: {self.website}, genres: {self.genres}, image_link: {self.image_link}, facebook_link: {self.facebook_link}, seeking_venue: {self.seeking_venue}, see king_description: {self.seeking_description}, past_shows_count: {self.past_shows_count}, upcoming_shows_count: {self.upcoming_shows_count}>'
+    def __repr__(self):
+        return f'<Artist ID: {self.id}, name: {self.name}, city: {self.city}, state: {self.state}, phone: {self.phone}, website: {self.website}, genres: {self.genres}, image_link: {self.image_link}, facebook_link: {self.facebook_link}, seeking_venue: {self.seeking_venue}, seeking_description: {self.seeking_description}>'
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
