@@ -215,14 +215,7 @@ def search_venues():
 
     response = {
         "count": len(venues),
-        "data": [
-            {
-                "id": venue.id,
-                "name": venue.name,
-                "num_upcoming_shows": venue.upcoming_shows_count(),
-            }
-            for venue in venues
-        ],
+        "data": venues
     }
 
     return render_template(
@@ -499,15 +492,8 @@ def search_artists():
     artists = Artist.query.filter(Artist.name.ilike(f"%{search_term}%")).all()
 
     response = {
-        "count": len(artists),
-        "data": [
-            {
-                "id": artist.id,
-                "name": artist.name,
-                "num_upcoming_shows": artist.upcoming_shows_count(),
-            }
-            for artist in artists
-        ],
+      "count": len(artists),
+      "data": artists
     }
 
     return render_template(
