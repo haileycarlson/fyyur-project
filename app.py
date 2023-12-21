@@ -374,9 +374,10 @@ def create_venue_submission():
         db.session.add(new_venue)
         db.session.commit()
 
-      except:
+      except Exception as e:
         db.session.rollback()
         print(sys.exc_info)
+        print(e)
 
       finally:
         db.session.close()
@@ -756,7 +757,7 @@ def create_artist_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
     form = ArtistForm(request.form, meta={'csrf': False})
-
+  
     if form.validate():
 
       try:
@@ -775,9 +776,10 @@ def create_artist_submission():
         db.session.add(new_artist)
         db.session.commit()
 
-      except ValueError as e:
+      except Exception as e:
         db.session.rollback()
-        print(sys.exc_info)
+        print(sys.exc_info())
+        print(e)
 
       finally:
         db.session.close()
@@ -785,13 +787,14 @@ def create_artist_submission():
       flash("Artist " + request.form["name"] + " was successfully listed!")
       return redirect(url_for("artists"))
         # return jsonify(body)
-        
+  
 
     else:
         flash(
-            "An error occurred. Artist " + request.form["name"] + " could not be listed."
-        )
-        return abort(500)
+            "An error occurred. Artist " + request.form["name"] + " could not be listed." 
+        )    
+    return abort(500)
+        
 
     # on successful db insert, flash success
     # flash("Artist " + request.form["name"] + " was successfully listed!")
@@ -808,55 +811,70 @@ def create_artist_submission():
 def shows():
     # displays list of shows at /shows
     # TODO: replace with real venues data.
-    data = [
-        {
-            "venue_id": 1,
-            "venue_name": "The Musical Hop",
-            "artist_id": 4,
-            "artist_name": "Guns N Petals",
-            "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-            "start_time": "2019-05-21T21:30:00.000Z",
-        },
-        {
-            "venue_id": 3,
-            "venue_name": "Park Square Live Music & Coffee",
-            "artist_id": 5,
-            "artist_name": "Matt Quevedo",
-            "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-            "start_time": "2019-06-15T23:00:00.000Z",
-        },
-        {
-            "venue_id": 3,
-            "venue_name": "Park Square Live Music & Coffee",
-            "artist_id": 6,
-            "artist_name": "The Wild Sax Band",
-            "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-            "start_time": "2035-04-01T20:00:00.000Z",
-        },
-        {
-            "venue_id": 3,
-            "venue_name": "Park Square Live Music & Coffee",
-            "artist_id": 6,
-            "artist_name": "The Wild Sax Band",
-            "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-            "start_time": "2035-04-08T20:00:00.000Z",
-        },
-        {
-            "venue_id": 3,
-            "venue_name": "Park Square Live Music & Coffee",
-            "artist_id": 6,
-            "artist_name": "The Wild Sax Band",
-            "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-            "start_time": "2035-04-15T20:00:00.000Z",
-        },
-    ]
-    return render_template("pages/shows.html", shows=data)
+    # data = [
+    #     {
+    #         "venue_id": 1,
+    #         "venue_name": "The Musical Hop",
+    #         "artist_id": 4,
+    #         "artist_name": "Guns N Petals",
+    #         "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
+    #         "start_time": "2019-05-21T21:30:00.000Z",
+    #     },
+    #     {
+    #         "venue_id": 3,
+    #         "venue_name": "Park Square Live Music & Coffee",
+    #         "artist_id": 5,
+    #         "artist_name": "Matt Quevedo",
+    #         "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
+    #         "start_time": "2019-06-15T23:00:00.000Z",
+    #     },
+    #     {
+    #         "venue_id": 3,
+    #         "venue_name": "Park Square Live Music & Coffee",
+    #         "artist_id": 6,
+    #         "artist_name": "The Wild Sax Band",
+    #         "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
+    #         "start_time": "2035-04-01T20:00:00.000Z",
+    #     },
+    #     {
+    #         "venue_id": 3,
+    #         "venue_name": "Park Square Live Music & Coffee",
+    #         "artist_id": 6,
+    #         "artist_name": "The Wild Sax Band",
+    #         "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
+    #         "start_time": "2035-04-08T20:00:00.000Z",
+    #     },
+    #     {
+    #         "venue_id": 3,
+    #         "venue_name": "Park Square Live Music & Coffee",
+    #         "artist_id": 6,
+    #         "artist_name": "The Wild Sax Band",
+    #         "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
+    #         "start_time": "2035-04-15T20:00:00.000Z",
+    #     },
+    # ]
+    # return render_template("pages/shows.html", shows=data)
 
 
 # MY CODE !!!!!!!!!!!!
 # def index():
-#     shows = shows.query.all()
-#     return render_template("pages/shows.html", shows=shows)
+    shows = Show.query.all()
+
+    data = []
+
+    for show in shows:
+      data.append(
+        {
+          "venue_id": show.venue.id,
+          "venue_name": show.venue.name,
+          "artist_id": show.artist.id,
+          "artist_name": show.artist.name,
+          "artist_image_link": show.artist.image_link,
+          "start_time": show.start_time.isoformat()
+        }
+      )    
+
+    return render_template("pages/shows.html", shows=data)
 
 
 @app.route("/shows/create")
@@ -877,46 +895,49 @@ def create_show_submission():
     # e.g., flash('An error occurred. Show could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
 
-    form = VenueForm(request.form, meta={'csrf': False})
+    form = ShowForm(request.form, meta={'csrf': False})
 
+    if form.validate():
 
-    try:
+      try:
         # Grabs the info from form to be added to the db
 
-        new_show = Show(
-            start_time=form.start_time.data,
-            artist_id=form.artist_id.data,
-            venue_id=form.venue_id.data,
-            artists=form.artists.data,
-            venues=form.venues.data,
-        )
+          new_show = Show(
+              start_time=form.start_time.data,
+              artist_id=form.artist_id.data,
+              venue_id=form.venue_id.data,
+              # artists=form.artists.data,
+              # venues=form.venues.data,
+          )
 
         # Info is then added to the db and commited
 
-        db.session.add(new_show)
-        db.session.commit()
+          db.session.add(new_show)
+          db.session.commit()
 
     # If adding data to the db goes wrong the session rollsback to not add data and sends errror message
 
-    except Exception as e:
+      except Exception as e:
         db.session.rollback()
-        error = e
+        # error = e
         print(sys.exc_info())
         print(e)
 
     # Closes the db session since we are done adding data
 
-    finally:
+      finally:
         db.session.close()
 
-    if error:
+      flash("Your show was successfully listed!")
+      return render_template("pages/home.html")
+
+       
+
+    else:
         flash("An error occurred. Your show could not be listed.")
         return abort(500)
 
-    else:
-        flash("Your show was successfully listed!")
-
-    return render_template("pages/home.html")
+       
 
 
 @app.errorhandler(404)
