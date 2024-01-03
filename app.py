@@ -321,8 +321,88 @@ def show_venue(venue_id):
     # print(venue_id)
     # print(venue[0])
     venue = Venue.query.get(venue_id)
+
+    # past_shows = []
+    # upcoming_shows = []
+    # upcoming_show_count = set([])
+    # past_shows_count = set([])
+
+    # now = datetime.utcnow() 
+
     if venue:
-        return render_template("pages/show_venue.html", venue=venue)
+      past_shows = []
+      upcoming_shows = []
+
+      current_time = datetime.now()
+
+    for show in venue.shows:
+      if show.start_time < current_time:
+        past_shows.append({
+          "artist_id": show.artist.id,
+          "artist_name": show.artist.name,
+          "artist_image_link": show.artist.image_link,
+          "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+      else:
+        upcoming_shows.append({
+          "artist_id": show.artist.id,
+          "artist_name": show.artist.name,
+          "artist_image_link": show.artist.image_link,
+          "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+      # db.session.query(Show)
+      # .join(Artist)
+      # .filter(Show.venue_id == venue_id)
+      # .filter(Show.start_time < datetime.now())
+      # .all()
+    
+    
+      # past_shows.append({
+      #     "artist_id": show.artist.id,
+      #     "artist_name": show.artist.name,
+      #     "artist_image_link": show.artist.image_link,
+      #     "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+      # })
+
+    # for show in artists.shows(
+    #   db.session.query(Show)
+    #   .join(Artist)
+    #   .filter(Show.venue_id == venue_id)
+    #   .filter(Show.start_time > datetime.now())
+    #   .all()
+    # ):
+
+
+    #   upcoming_shows.append({
+    #     "artist_id": show.artist.id,
+    #     "artist_name": show.artist.name,
+    #     "artist_image_link": show.artist.image_link,
+    #     "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+    #   })
+
+    data = {
+      "id": venue.id,
+      "name": venue.name,
+      "genres": venue.genres,
+      "city": venue.city,
+      "state": venue.state,
+      "address": venue.address,
+      "phone": venue.phone,
+      "website": venue.website,
+      "image_link": venue.image_link,
+      "facebook_link": venue.facebook_link,
+      "seeking_talent": venue.seeking_talent,
+      "seeking_description": venue.seeking_description, 
+      "upcoming_shows": upcoming_shows,
+      "upcoming_shows_count": len(upcoming_shows),
+      "past_shows": past_shows,
+      "past_shows_count": len(past_shows)
+    }
+
+    if venue:
+        return render_template("pages/show_venue.html", venue=data)
     else:
         return "Venue not found", 404
 
@@ -597,8 +677,51 @@ def show_artist(artist_id):
     # data = list(filter(lambda d: d["id"] == artist_id, [data1, data2, data3]))[0]
     # return render_template("pages/show_artist.html", artist=data)
     artist = Artist.query.get(artist_id)
+
     if artist:
-        return render_template("pages/show_artist.html", artist=artist)
+      past_shows = []
+      upcoming_shows = []
+
+      current_time = datetime.now()
+
+    for show in artist.shows:
+      if show.start_time < current_time:
+        past_shows.append({
+          "venue_id": show.venue.id,
+          "venue_name": show.venue.name,
+          "venue_image_link": show.venue.image_link,
+          "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+      else:
+        upcoming_shows.append({
+          "venue_id": show.venue.id,
+          "venue_name": show.venue.name,
+          "venue_image_link": show.venue.image_link,
+          "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    data = {
+        "id": artist.id,
+        "name": artist.name,
+        "city": artist.city,
+        "state": artist.state,
+        "phone": artist.phone,
+        "website": artist.website,
+        "image_link": artist.image_link,
+        "facebook_link": artist.facebook_link,
+        "genres": artist.genres,
+        "seeking_venue": artist.seeking_venue,
+        "seeking_description": artist.seeking_description,
+        "upcoming_shows": upcoming_shows,
+        "upcoming_shows_count": len(upcoming_shows),
+        "past_shows": past_shows,
+        "past_shows_count": len(past_shows)
+    }
+
+
+    if artist:
+        return render_template("pages/show_artist.html", artist=data)
     else:
         return "Artist not found", 404
 
