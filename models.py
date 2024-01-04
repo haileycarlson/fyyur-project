@@ -11,8 +11,6 @@ class Show(db.Model):
     start_time = db.Column(db.DateTime, nullable=False)
     artist_id = db.Column(db.Integer, db.ForeignKey("artist.id"), nullable=False)
     venue_id = db.Column(db.Integer, db.ForeignKey("venue.id"), nullable=False)
-    # artist = db.relationship('Artist', backref='shows', lazy='joined')
-    # venue = db.relationship('Venue', backref='shows', lazy='joined')
 
 
 class Venue(db.Model):
@@ -36,7 +34,6 @@ class Venue(db.Model):
     def __repr__(self):
         return f'<Venue ID: {self.id}, name: {self.name}, genres: {self.genres}, city: {self.city}, state: {self.state}, address: {self.address}, phone: {self.phone}, website: {self.website}, image_link: {self.image_link}, facebook_link: {self.facebook_link}, seeking_talent: {self.seeking_talent}, seeking_description: {self.seeking_description}>'
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 
 class Artist(db.Model):
