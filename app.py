@@ -24,6 +24,7 @@ from flask_wtf import Form
 from forms import *
 import sys
 from sqlalchemy import func, or_
+from datetime import datetime
 
 # Added to try to fix database connection
 from flask_migrate import Migrate
@@ -35,9 +36,6 @@ from models import db, Show, Venue, Artist
 # ----------------------------------------------------------------------------#
 # Connecting to local DB
 app = Flask(__name__)
-app.config[
-    "SQLALCHEMY_DATABASE_URI"
-] = "postgresql://haileycarlson:cupcake@localhost:5432/fyyur"
 moment = Moment(app)
 app.config.from_object("config")
 db.init_app(app)
@@ -162,58 +160,51 @@ def search_venues():
 
 @app.route("/venues/<int:venue_id>")
 def show_venue(venue_id):
-    # Queries the venue by ID
-    venue = Venue.query.get(venue_id)
+    # Queries the venue by ID and raises 404 error if not found
+    venue = Venue.query.get_or_404(venue_id)
 
-    # Checks to see if artist exists
-    if venue:
-      # empty lists for the past and upcoming shows
-      past_shows = []
-      upcoming_shows = []
+    
+    # empty lists for the past and upcoming shows
+    past_shows = []
+    upcoming_shows = []
 
-      # Gets the current time
-      current_time = datetime.now()
 
     # Iterating through the venue shows to put into past or present shows
     for show in venue.shows:
-      if show.start_time < current_time:
-        past_shows.append({
+        temp_show = {
           "artist_id": show.artist.id,
           "artist_name": show.artist.name,
           "artist_image_link": show.artist.image_link,
           "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
-        })
+        }
+        if show.start_time <= datetime.now():
+          past_shows.append(temp_show)
+        else:
+          upcoming_shows.append(temp_show)
 
-      else:
-        upcoming_shows.append({
-          "artist_id": show.artist.id,
-          "artist_name": show.artist.name,
-          "artist_image_link": show.artist.image_link,
-          "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
-        })
+    # Creating a dictionary with venue and show details
+    data = vars(venue)
+    
+    data["id"] = venue.id
+    data["name"] = venue.name
+    data["genres"] = venue.genres
+    data["city"] = venue.city
+    data["state"] = venue.state
+    data["address"] = venue.address
+    data["phone"] = venue.phone
+    data["website"] = venue.website
+    data["image_link"] = venue.image_link
+    data["facebook_link"] = venue.facebook_link
+    data["seeking_talent"] = venue.seeking_talent
+    data["seeking_description"] = venue.seeking_description
+    data["upcoming_shows"] = upcoming_shows
+    data["upcoming_shows_count"] = len(upcoming_shows)
+    data["past_shows"] = past_shows
+    data["past_shows_count"] = len(past_shows)
+    
 
-    # Creatingg a dictionary with venue and show details
-    data = {
-      "id": venue.id,
-      "name": venue.name,
-      "genres": venue.genres,
-      "city": venue.city,
-      "state": venue.state,
-      "address": venue.address,
-      "phone": venue.phone,
-      "website": venue.website,
-      "image_link": venue.image_link,
-      "facebook_link": venue.facebook_link,
-      "seeking_talent": venue.seeking_talent,
-      "seeking_description": venue.seeking_description, 
-      "upcoming_shows": upcoming_shows,
-      "upcoming_shows_count": len(upcoming_shows),
-      "past_shows": past_shows,
-      "past_shows_count": len(past_shows)
-    }
-
-    # Renders the show venue page with details of the venue and shows
     if venue:
+        # Renders the show venue page with details of the venue and shows
         return render_template("pages/show_venue.html", venue=data)
     else:
         # Returns error message if the venue is not found
@@ -339,54 +330,47 @@ def search_artists():
 
 @app.route("/artists/<int:artist_id>")
 def show_artist(artist_id):
-    # Queries the artist by ID
-    artist = Artist.query.get(artist_id)
+    # Queries the artist by ID and raises 404 error if not found
+    artist = Artist.query.get_or_404(artist_id)
 
-    # Checks to see if artist exists
-    if artist:
-      # empty lists for the past and upcoming shows
-      past_shows = []
-      upcoming_shows = []
+    # empty lists for the past and upcoming shows
+    past_shows = []
+    upcoming_shows = []
 
-      # Gets the current time
-      current_time = datetime.now()
 
     # Iterating through the artist shows to put into past or present shows
     for show in artist.shows:
-      if show.start_time < current_time:
-        past_shows.append({
+        temp_show = {
           "venue_id": show.venue.id,
           "venue_name": show.venue.name,
           "venue_image_link": show.venue.image_link,
           "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
-        })
-
-      else:
-        upcoming_shows.append({
-          "venue_id": show.venue.id,
-          "venue_name": show.venue.name,
-          "venue_image_link": show.venue.image_link,
-          "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
-        })
+        }
+        if show.start_time <= datetime.now():
+          past_shows.append(temp_show)
+        else:
+          upcoming_shows.append(temp_show)
+      
     # Creatingg a dictionary with artist and show details
-    data = {
-        "id": artist.id,
-        "name": artist.name,
-        "city": artist.city,
-        "state": artist.state,
-        "phone": artist.phone,
-        "website": artist.website,
-        "image_link": artist.image_link,
-        "facebook_link": artist.facebook_link,
-        "genres": artist.genres,
-        "seeking_venue": artist.seeking_venue,
-        "seeking_description": artist.seeking_description,
-        "upcoming_shows": upcoming_shows,
-        "upcoming_shows_count": len(upcoming_shows),
-        "past_shows": past_shows,
-        "past_shows_count": len(past_shows)
-    }
-
+    data = vars(artist)
+    
+    data["id"] = artist.id
+    data["name"] = artist.name
+    data["genres"] = artist.genres
+    data["city"] = artist.city
+    data["state"] = artist.state
+    data["address"] = artist.address
+    data["phone"] = artist.phone
+    data["website"] = artist.website
+    data["image_link"] = artist.image_link
+    data["facebook_link"] = artist.facebook_link
+    data["seeking_talent"] = artist.seeking_talent
+    data["seeking_description"] = artist.seeking_description
+    data["upcoming_shows"] = upcoming_shows
+    data["upcoming_shows_count"] = len(upcoming_shows)
+    data["past_shows"] = past_shows
+    data["past_shows_count"] = len(past_shows)
+    
 
     if artist:
       # Renders the show artist page with details of the artist and shows
